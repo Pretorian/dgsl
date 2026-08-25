@@ -33,7 +33,7 @@ describe('App', () => {
 
   it('should render the app', () => {
     render(<App />);
-    expect(screen.getByText('DGSL Spring Game Schedule 2026')).toBeInTheDocument();
+    expect(screen.getByText(/DGSL Fall 2026 Game Schedule/)).toBeInTheDocument();
   });
 
   it('should render skip to main content link', () => {

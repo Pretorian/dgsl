@@ -18,7 +18,11 @@
       "Bash(git -C /Users/x/work/DGSL-2026 show master:src/App.js)",
       "Bash(git -C /Users/x/work/DGSL-2026 show master:src/components/ScheduleTable.js)",
       "Bash(git -C /Users/x/work/DGSL-2026 show master:src/constants/index.js)",
-      "Bash(git -C /Users/x/work/DGSL-2026 show master:src/utils/helpers.js)"
+      "Bash(git -C /Users/x/work/DGSL-2026 show master:src/utils/helpers.js)",
+      "Bash(/tmp/xlsxenv/bin/python3)",
+      "Read(//tmp/**)",
+      "Bash(npx react-scripts *)",
+      "Bash(git stash *)"
     ],
     "deny": [],
     "ask": []

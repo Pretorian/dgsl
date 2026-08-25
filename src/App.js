@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 
 // Components
 import WeatherWidget from './components/WeatherWidget';
@@ -8,11 +8,16 @@ import FilterSection from './components/FilterSection';
 import ScheduleTable from './components/ScheduleTable';
 
 // Utils and Constants
-import { scheduleData } from './constants';
+import { seasons } from './constants';
 import { formatDate, getGameId } from './utils/helpers';
 import { useLocalStorage } from './hooks/useLocalStorage';
 
 const App = () => {
+  // Season selection (which schedule to display)
+  const [selectedSeasonId, setSelectedSeasonId] = useLocalStorage('dgsl-season', seasons[0].id);
+  const currentSeason = seasons.find(season => season.id === selectedSeasonId) || seasons[0];
+  const scheduleData = currentSeason.data;
+
   // Filter state with localStorage persistence
   const [selectedAgeGroup, setSelectedAgeGroup] = useLocalStorage('dgsl-age-group', 'all');
   const [selectedField, setSelectedField] = useLocalStorage('dgsl-field', 'all');
@@ -87,7 +92,7 @@ const App = () => {
   const uniqueDates = useMemo(() => {
     const dates = [...new Set(scheduleData.map(match => match.date))];
     return dates.sort();
-  }, []);
+  }, [scheduleData]);
 
   // Get all teams from schedule
   const allTeams = useMemo(() => {
@@ -97,7 +102,19 @@ const App = () => {
       teams.add(match.team2);
     });
     return Array.from(teams).sort();
-  }, []);
+  }, [scheduleData]);
+
+  // Reset team/date filters when switching seasons, since they're tied to a specific season's data
+  const isFirstSeasonRender = useRef(true);
+  useEffect(() => {
+    if (isFirstSeasonRender.current) {
+      isFirstSeasonRender.current = false;
+      return;
+    }
+    setSelectedTeam('all');
+    setSelectedDate('all');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedSeasonId]);
 
   // Filter and sort matches
   const filteredMatches = useMemo(() => {
@@ -149,7 +166,7 @@ const App = () => {
 
     return matches;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedAgeGroup, selectedField, selectedDate, selectedTeam, showGames, sortConfig, gameStatuses]);
+  }, [scheduleData, selectedAgeGroup, selectedField, selectedDate, selectedTeam, showGames, sortConfig, gameStatuses]);
 
   const handleSort = (key) => {
     let direction = 'asc';
@@ -172,8 +189,25 @@ const App = () => {
 
       <header id="site-header" className="site-header">
         <h1 className="site-title">
-          <span className="site-title-icon" aria-hidden="true">⚽</span> DGSL Spring Game Schedule 2026
+          <span className="site-title-icon" aria-hidden="true">⚽</span> DGSL {currentSeason.name} Game Schedule
+          {currentSeason.archived && <span className="season-archived-badge">Archived</span>}
         </h1>
+        <div className="season-select-wrapper">
+          <label htmlFor="season-select" className="season-select-label">Season</label>
+          <select
+            id="season-select"
+            value={selectedSeasonId}
+            onChange={(e) => setSelectedSeasonId(e.target.value)}
+            className="season-select"
+            aria-label="Select season"
+          >
+            {seasons.map(season => (
+              <option key={season.id} value={season.id}>
+                {season.name}{season.archived ? ' (Archived)' : ''}
+              </option>
+            ))}
+          </select>
+        </div>
       </header>
 
       <FeaturedMatches

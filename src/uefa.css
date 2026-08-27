@@ -1,0 +1,20 @@
+/* Color Theme Swatches in Hex */
+.Uefa-Champions-League-1-hex { color: #0E1E5B; }
+.Uefa-Champions-League-2-hex { color: #091442; }
+.Uefa-Champions-League-3-hex { color: #3562A6; }
+.Uefa-Champions-League-4-hex { color: #6594C0; }
+.Uefa-Champions-League-5-hex { color: #0B0B0B; }
+
+/* Color Theme Swatches in RGBA */
+.Uefa-Champions-League-1-rgba { color: rgba(14, 29, 91, 1); }
+.Uefa-Champions-League-2-rgba { color: rgba(8, 20, 66, 1); }
+.Uefa-Champions-League-3-rgba { color: rgba(52, 98, 165, 1); }
+.Uefa-Champions-League-4-rgba { color: rgba(100, 147, 191, 1); }
+.Uefa-Champions-League-5-rgba { color: rgba(11, 11, 11, 1); }
+
+/* Color Theme Swatches in HSLA */
+.Uefa-Champions-League-1-hsla { color: hsla(227, 73, 20, 1); }
+.Uefa-Champions-League-2-hsla { color: hsla(228, 76, 14, 1); }
+.Uefa-Champions-League-3-hsla { color: hsla(216, 51, 42, 1); }
+.Uefa-Champions-League-4-hsla { color: hsla(209, 41, 57, 1); }
+.Uefa-Champions-League-5-hsla { color: hsla(0, 0, 4, 1); }

@@ -1,0 +1,43 @@
+{
+  "name": "dgsl-schedule-filter",
+  "version": "1.0.0",
+  "description": "DGSL Spring Game Schedule 2026 - Filter and view soccer games",
+  "private": true,
+  "homepage": "https://Pretorian.github.io/dgsl-2026",
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-scripts": "5.0.1"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "BUILD_PATH='./docs' react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "predeploy": "npm run build",
+    "deploy": "echo 'Build complete. Commit and push the docs folder to deploy.'"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
+    "gh-pages": "^6.3.0"
+  }
+}

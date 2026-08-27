@@ -3,7 +3,7 @@
   "version": "1.1.0",
   "description": "DGSL Spring Game Schedule 2026 - Filter and view soccer games",
   "private": true,
-  "homepage": "https://Pretorian.github.io/dgsl-2026",
+  "homepage": "https://Pretorian.github.io/dgsl",
   "dependencies": {
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

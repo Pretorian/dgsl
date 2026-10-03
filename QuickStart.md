@@ -55,7 +55,7 @@ This creates a `build/` folder with optimized files ready for deployment.
 
 ## Data Structure
 
-The schedule data is embedded directly in the `App.js` file. Each game contains:
+Each season's schedule is an array in `src/constants/index.js`. Each game contains:
 
 - **date**: Game date (YYYY-MM-DD format)
 - **ageGroup**: "6-8", "9-10", or "11-13"
@@ -67,9 +67,18 @@ The schedule data is embedded directly in the `App.js` file. Each game contains:
 
 ## Updating the Schedule
 
-To update the schedule data, edit the `scheduleDataJson` array in `src/App.js`. Follow the existing data structure format.
+The league's Google Sheet is the source of truth, so diff against it rather than
+retyping:
 
-Web application for viewing and filtering the Durham Girls Soccer League (DGSL) Spring 2026 game schedule.
+```bash
+npm run schedule:check    # show what differs
+npm run schedule:sync     # apply it to src/constants/index.js
+```
+
+To edit by hand, change `fallScheduleData2026` (or `springScheduleData2026`) in
+`src/constants/index.js`. See the README for details and exit codes.
+
+Web application for viewing and filtering the Durham Girls Soccer League (DGSL) game schedule — Fall 2026 (current) and Spring 2026 (archived).
 
 ## Features
 
@@ -80,6 +89,7 @@ Web application for viewing and filtering the Durham Girls Soccer League (DGSL) 
 - **Sortable Columns**: Click on Date, Time, or Home Team headers to sort (ascending/descending)
 - **Visual Indicators**: Rain Make Up games highlighted in yellow
 - **Responsive Design**: Works on desktop, tablet, and mobile devices
+- **Season Switcher**: Fall 2026 (current) or Spring 2026 (archived)
 
 ## Troubleshooting
 

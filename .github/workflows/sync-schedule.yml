@@ -1,0 +1,121 @@
+name: Sync schedule from Google Sheet
+
+on:
+  # Saturday + Sunday 11:00 UTC (~07:00 ET) — after the 07:30 weekend
+  # cancellation update, before the 09:00 kickoff. Plus Friday evening.
+  schedule:
+    - cron: '0 11 * * 6,0'
+    - cron: '0 23 * * 5'
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: What to do if the sheet differs
+        type: choice
+        default: pull-request
+        options:
+          - pull-request
+          - report-only
+      sheet_url:
+        description: Override the CSV export URL (blank = the league sheet)
+        type: string
+        required: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: sync-schedule
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: master
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+
+      - name: Compare schedule against the sheet
+        id: check
+        env:
+          # Via env, never inline — an input interpolated into the shell is injectable.
+          SHEET_URL: ${{ inputs.sheet_url }}
+        run: |
+          if [ -n "$SHEET_URL" ]; then
+            set -- "--url=$SHEET_URL"
+          else
+            set --
+          fi
+
+          set +e
+          node scripts/sync-schedule.mjs --check "$@" | tee diff.txt
+          code=${PIPESTATUS[0]}   # not $?, which would be tee's status
+          set -e
+
+          echo "code=$code" >> "$GITHUB_OUTPUT"
+          case "$code" in
+            0) echo "::notice::Schedule is in sync with the sheet." ;;
+            1) echo "::warning::Schedule differs from the sheet." ;;
+            3) echo "::error::Sheet layout changed — the parser needs updating by hand." ;;
+            *) echo "::error::Could not read the sheet (network, or it is no longer public)." ;;
+          esac
+
+          # Only a clean diff (1) continues; 0 is a no-op and 2/3 are real failures.
+          [ "$code" = "0" ] || [ "$code" = "1" ]
+
+      - name: Apply and open a pull request
+        if: steps.check.outputs.code == '1' && inputs.mode != 'report-only'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SHEET_URL: ${{ inputs.sheet_url }}
+        run: |
+          if [ -n "$SHEET_URL" ]; then
+            set -- "--url=$SHEET_URL"
+          else
+            set --
+          fi
+          node scripts/sync-schedule.mjs --write "$@"
+
+          BRANCH="schedule-sync/$(date -u +%Y-%m-%d)"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+
+          # Fetch first so --force-with-lease has a defined lease if the branch exists.
+          git fetch origin "$BRANCH" || true
+          git checkout -B "$BRANCH"
+          git add src/constants/index.js
+          git commit -m 'Sync schedule from league Google Sheet'
+          git push --force-with-lease origin "$BRANCH"
+
+          {
+            echo 'The league sheet no longer matches `src/constants/index.js`.'
+            echo
+            echo '```'
+            cat diff.txt
+            echo '```'
+            echo
+            echo 'Check these against the sheet before merging — the sheet is hand-edited,'
+            echo 'so a mid-season change is sometimes a typo rather than a real reschedule.'
+          } > body.md
+
+          # Reuse the open PR for this branch if the job already ran today.
+          if [ -z "$(gh pr list --head "$BRANCH" --state open --json number --jq '.[].number')" ]; then
+            gh pr create --base master --head "$BRANCH" \
+              --title "Schedule changes from the league sheet ($(date -u +%Y-%m-%d))" \
+              --body-file body.md
+          else
+            gh pr comment "$BRANCH" --body-file body.md
+          fi
+
+      - name: Upload diff
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: schedule-diff
+          path: diff.txt
+          if-no-files-found: ignore

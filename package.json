@@ -1,6 +1,6 @@
 {
   "name": "dgsl-schedule-filter",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "DGSL Spring Game Schedule 2026 - Filter and view soccer games",
   "private": true,
   "homepage": "https://Pretorian.github.io/dgsl-2026",
@@ -15,7 +15,10 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "predeploy": "npm run build",
-    "deploy": "echo 'Build complete. Commit and push the docs folder to deploy.'"
+    "deploy": "echo 'Build complete. Commit and push the docs folder to deploy.'",
+    "schedule:check": "node scripts/sync-schedule.mjs --check",
+    "schedule:sync": "node scripts/sync-schedule.mjs --write",
+    "schedule:dump": "node scripts/sync-schedule.mjs --json"
   },
   "eslintConfig": {
     "extends": [

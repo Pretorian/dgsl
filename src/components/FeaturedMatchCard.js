@@ -1,12 +1,14 @@
 import React from 'react';
 import TeamFlag from './TeamFlag';
-import { getAgeGroupBadgeClass, getStatusClass } from '../utils/helpers';
+import { getAgeGroupBadgeClass, getStatusClass, downloadCalendarEvent } from '../utils/helpers';
 
 /**
  * FeaturedMatchCard component - Displays a single match card in the featured carousel
  */
-const FeaturedMatchCard = ({ match, getGameStatus }) => {
+const FeaturedMatchCard = ({ match, getGameStatus, favoriteTeam }) => {
   const currentStatus = getGameStatus(match);
+  const isFavoriteMatch = Boolean(favoriteTeam) && (match.team1 === favoriteTeam || match.team2 === favoriteTeam);
+  const canAddToCalendar = isFavoriteMatch && currentStatus !== 'Cancelled' && currentStatus !== 'Played';
 
   return (
     <article
@@ -57,6 +59,17 @@ const FeaturedMatchCard = ({ match, getGameStatus }) => {
           {currentStatus}
         </span>
       </div>
+
+      {canAddToCalendar && (
+        <button
+          type="button"
+          className="add-to-calendar-btn"
+          onClick={() => downloadCalendarEvent(match)}
+          aria-label={`Add ${match.team1} versus ${match.team2} to calendar`}
+        >
+          <span aria-hidden="true">📅</span> Add to Calendar
+        </button>
+      )}
     </article>
   );
 };

@@ -1,4 +1,5 @@
 import {
+  buildCalendarEvent,
   getFlagUrl,
   getAgeGroupColor,
   formatDate,
@@ -114,5 +115,32 @@ describe('helpers', () => {
     it('should return default class for unknown status', () => {
       expect(getStatusClass('unknown')).toBe('match-status-badge match-status-scheduled');
     });
+  });
+});
+
+describe('buildCalendarEvent', () => {
+  const match = { date: '2026-10-10', time: '11:20', ageGroup: '11-13', team1: 'Norway', team2: 'Costa Rica', field: 'Upper Fields 1-3' };
+  const ics = buildCalendarEvent(match, 60, new Date('2026-10-06T12:00:00Z'));
+
+  it('should produce a CRLF-delimited VEVENT', () => {
+    expect(ics.startsWith('BEGIN:VCALENDAR\r\n')).toBe(true);
+    expect(ics).toContain('BEGIN:VEVENT\r\n');
+    expect(ics).toContain('DTSTAMP:20261006T120000Z');
+  });
+
+  it('should use local park time for start and end', () => {
+    expect(ics).toContain('DTSTART;TZID=America/New_York:20261010T112000');
+    expect(ics).toContain('DTEND;TZID=America/New_York:20261010T122000');
+  });
+
+  it('should include escaped teams and location', () => {
+    expect(ics).toContain('SUMMARY:DGSL: Norway vs Costa Rica (11-13)');
+    expect(ics).toContain('LOCATION:Upper Fields 1-3\\, Merrick Moore Park\\, 632 N. Hoover Road\\, Durham\\, NC 27703');
+    expect(ics).toContain('UID:2026-10-10-11:20-11-13@dgsl');
+  });
+
+  it('should escape semicolons in text fields', () => {
+    const out = buildCalendarEvent({ ...match, field: 'Field A; North' });
+    expect(out).toContain('LOCATION:Field A\\; North\\, Merrick Moore Park');
   });
 });

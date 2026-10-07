@@ -188,7 +188,7 @@ const FeaturedMatches = ({ matches, getGameStatus, favoriteTeam, onOpenTeamDialo
           >
             <div className="featured-matches-grid" style={{ gridTemplateColumns: `repeat(${cardsPerSlide}, 1fr)` }}>
               {currentGames.map((match, idx) => (
-                <FeaturedMatchCard key={startIdx + idx} match={match} getGameStatus={getGameStatus} />
+                <FeaturedMatchCard key={startIdx + idx} match={match} getGameStatus={getGameStatus} favoriteTeam={favoriteTeam} />
               ))}
             </div>
           </div>

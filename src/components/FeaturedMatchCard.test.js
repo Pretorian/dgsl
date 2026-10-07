@@ -76,4 +76,19 @@ describe('FeaturedMatchCard', () => {
     const badge = container.querySelector('.match-status-cancelled');
     expect(badge).toBeInTheDocument();
   });
+
+  describe('Add to Calendar', () => {
+    it('should show the button only for the favorite team', () => {
+      const { rerender } = render(<FeaturedMatchCard match={mockMatch} getGameStatus={mockGetGameStatus} favoriteTeam="Brazil" />);
+      expect(screen.getByRole('button', { name: /add argentina versus brazil to calendar/i })).toBeInTheDocument();
+
+      rerender(<FeaturedMatchCard match={mockMatch} getGameStatus={mockGetGameStatus} favoriteTeam="Spain" />);
+      expect(screen.queryByRole('button', { name: /to calendar/i })).not.toBeInTheDocument();
+    });
+
+    it('should hide the button for cancelled games', () => {
+      render(<FeaturedMatchCard match={mockMatch} getGameStatus={() => 'Cancelled'} favoriteTeam="Brazil" />);
+      expect(screen.queryByRole('button', { name: /to calendar/i })).not.toBeInTheDocument();
+    });
+  });
 });

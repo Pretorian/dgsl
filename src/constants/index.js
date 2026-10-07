@@ -282,3 +282,8 @@ export const seasons = [
   { id: 'fall-2026', name: 'Fall 2026', archived: false, data: fallScheduleData2026 },
   { id: 'spring-2026', name: 'Spring 2026', archived: true, data: springScheduleData2026 },
 ];
+
+export const fieldLocation = {
+  name: 'Merrick Moore Park',
+  address: '632 N. Hoover Road, Durham, NC 27703',
+};

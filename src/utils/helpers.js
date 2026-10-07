@@ -1,4 +1,4 @@
-import { countryCodeMap } from '../constants';
+import { countryCodeMap, fieldLocation } from '../constants';
 
 // Helper function to get flag URL
 export const getFlagUrl = (teamName) => {
@@ -66,4 +66,83 @@ export const getStatusClass = (status) => {
     case 'Rain Make Up': return 'match-status-badge match-status-rain';
     default: return 'match-status-badge match-status-scheduled';
   }
+};
+
+// Escape text per RFC 5545 (backslash, semicolon, comma, newline)
+const escapeIcsText = (text) =>
+  String(text)
+    .replace(/\\/g, '\\\\')
+    .replace(/;/g, '\\;')
+    .replace(/,/g, '\\,')
+    .replace(/\r?\n/g, '\\n');
+
+// Helper function to build an iCalendar (.ics) event for a match.
+// Times are local to the park, so they're pinned to America/New_York.
+export const buildCalendarEvent = (match, durationMinutes = 60, now = new Date()) => {
+  const [year, month, day] = match.date.split('-').map(Number);
+  const [hours, minutes] = match.time.split(':').map(Number);
+  const end = new Date(Date.UTC(year, month - 1, day, hours, minutes + durationMinutes));
+
+  const pad = (n) => String(n).padStart(2, '0');
+  const localStamp = (y, mo, d, h, mi) => `${y}${pad(mo)}${pad(d)}T${pad(h)}${pad(mi)}00`;
+  const dtStart = localStamp(year, month, day, hours, minutes);
+  const dtEnd = localStamp(end.getUTCFullYear(), end.getUTCMonth() + 1, end.getUTCDate(), end.getUTCHours(), end.getUTCMinutes());
+  const dtStamp = now.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+
+  const location = `${match.field}, ${fieldLocation.name}, ${fieldLocation.address}`;
+  const description = `DGSL ${match.ageGroup} game: ${match.team1} vs ${match.team2}\nField: ${match.field}`;
+
+  return [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//DGSL//Game Schedule//EN',
+    'CALSCALE:GREGORIAN',
+    'METHOD:PUBLISH',
+    'BEGIN:VTIMEZONE',
+    'TZID:America/New_York',
+    'BEGIN:DAYLIGHT',
+    'TZOFFSETFROM:-0500',
+    'TZOFFSETTO:-0400',
+    'TZNAME:EDT',
+    'DTSTART:19700308T020000',
+    'RRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=2SU',
+    'END:DAYLIGHT',
+    'BEGIN:STANDARD',
+    'TZOFFSETFROM:-0400',
+    'TZOFFSETTO:-0500',
+    'TZNAME:EST',
+    'DTSTART:19701101T020000',
+    'RRULE:FREQ=YEARLY;BYMONTH=11;BYDAY=1SU',
+    'END:STANDARD',
+    'END:VTIMEZONE',
+    'BEGIN:VEVENT',
+    `UID:${getGameId(match)}@dgsl`,
+    `DTSTAMP:${dtStamp}`,
+    `DTSTART;TZID=America/New_York:${dtStart}`,
+    `DTEND;TZID=America/New_York:${dtEnd}`,
+    `SUMMARY:${escapeIcsText(`DGSL: ${match.team1} vs ${match.team2} (${match.ageGroup})`)}`,
+    `LOCATION:${escapeIcsText(location)}`,
+    `DESCRIPTION:${escapeIcsText(description)}`,
+    'BEGIN:VALARM',
+    'TRIGGER:-PT1H',
+    'ACTION:DISPLAY',
+    'DESCRIPTION:Game reminder',
+    'END:VALARM',
+    'END:VEVENT',
+    'END:VCALENDAR',
+    '',
+  ].join('\r\n');
+};
+
+// Helper function to download a match as an .ics file (opens in Apple Calendar)
+export const downloadCalendarEvent = (match) => {
+  const blob = new Blob([buildCalendarEvent(match)], { type: 'text/calendar;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `dgsl-${getGameId(match)}.ics`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 };

@@ -32,7 +32,8 @@ There is no separate lint command; ESLint runs via `react-scripts` (config `esli
 - `.github/workflows/deploy.yml` builds and deploys `docs/` to GitHub Pages automatically on every push to `master`.
 - `.github/workflows/sync-schedule.yml` checks the league Google Sheet on a cron (Fri 23:00, Sat/Sun 11:00 UTC) and can be run by hand from the Actions tab. It opens a PR when the sheet differs; it does **not** deploy.
 - The `master` branch is the source branch (app code + docs/ output); `gh-pages` is a separate branch. Confirm which branch you're on (`git branch`) before assuming where changes should land — GitHub Pages deployment here is driven by the Actions workflow on `master`, not by pushing to `gh-pages` directly.
-- `homepage` in package.json is `https://Pretorian.github.io/dgsl-2026`.
+- `homepage` in package.json is `https://Pretorian.github.io/dgsl` — it must match the repo name (`Pretorian/dgsl`), since CRA bakes it into asset paths. A mismatch serves a blank page.
+- The repo's Pages source must be set to **GitHub Actions** (Settings → Pages). If it's set to "Deploy from a branch", Pages serves the README instead of the app.
 
 ## Architecture
 
@@ -78,6 +79,6 @@ Useful flags when the sheet moves or goes private: `--csv=<file>` (parse a hand-
 
 Every component/util/hook has a co-located `*.test.js`. `src/setupTests.js` mocks `window.localStorage` globally and resets mocks in `beforeEach`. `App.test.js` mocks `global.fetch` for the weather call. When adding features touching persisted state or the weather widget, follow these existing mocking patterns rather than hitting real `localStorage`/network in tests.
 
-**Known failure:** `src/hooks/useLocalStorage.test.js` fails all 11 of its tests with `TypeError: localStorage.getItem.mockClear is not a function` — its `beforeEach` expects `setupTests.js` to install jest mock functions, but the global mock assigns plain functions. This predates the schedule-sync work; a full `npm test` run is 131 passing / 11 failing on a clean tree. Don't read it as a regression you caused, and fix it separately if you touch that hook.
+**localStorage mock:** jsdom defines `window.localStorage` as a getter, so `setupTests.js` installs the mock with `Object.defineProperty` (plain assignment is silently ignored). A full `npm test` run should be all-green; the deploy workflow runs the tests and won't publish if any fail.
 
 `scripts/sync-schedule.mjs` has no unit test — it's exercised by running `npm run schedule:check` against the live sheet, and by feeding `--csv=` fixtures with mutated layouts to confirm the exit codes.

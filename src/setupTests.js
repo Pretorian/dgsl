@@ -11,7 +11,11 @@ const localStorageMock = {
   removeItem: jest.fn(),
   clear: jest.fn(),
 };
-global.localStorage = localStorageMock;
+// jsdom defines window.localStorage as a getter, so plain assignment is ignored.
+Object.defineProperty(window, 'localStorage', {
+  value: localStorageMock,
+  configurable: true,
+});
 
 // Reset localStorage before each test
 beforeEach(() => {

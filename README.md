@@ -2,7 +2,7 @@
 
 A React web app for viewing and filtering the Durham Girls Soccer League (DGSL) game schedule.
 
-Live: **https://Pretorian.github.io/dgsl-2026**
+Live: **https://Pretorian.github.io/dgsl**
 
 ## Features
 
